@@ -42,7 +42,7 @@ class Stats
         }
         @metrics = {
             "status" => {
-                :on => [ :frontend, :server ],
+                :on => [ :backend, :server ],
                 :fields => ['status' ]
             },
             "sessions" => {
@@ -64,13 +64,13 @@ class Stats
         }
 
         # A map of column name to list of
-        @cleanups => {
+        @cleanups = {
             "status" => [
                 [/^UP$/, "2"],
                 [/^DOWN.*$/, "1"], #Going Up
-                [/^no check$/, "0"]
+                [/^no check$/, "0"],
                 [/^UP.*$/, "-1"], #Going Down
-                [/^DOWN$/, "-2"],
+                [/^DOWN$/, "-2"]
             ]
         }
     end

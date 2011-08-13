@@ -23,6 +23,4 @@ haproxy_errors denied_req:COUNTER:0:U, denied_resp:COUNTER:0:U, error_req:GAUGE:
 haproxy_sessions current:GAUGE:0:65536, max:GAUGE:0:65536, limit:GAUGE:0:65536, total:COUNTER:0:U
 haproxy_session_rates current:GAUGE:0:65536, max:GAUGE:0:65536, limit:GAUGE:0:65536
 haproxy_traffic bytes_in:COUNTER:0:U, bytes_out:COUNTER:0:U
-
-
 haproxy_status status:GAUGE:-2:2
