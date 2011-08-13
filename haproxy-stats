@@ -32,7 +32,7 @@ options = {
 class Stats
 
     def initialize(hostname, socket)
-        @hostname = hostname.gsub('-', '_')
+        @hostname = hostname
         @socket = socket
 
         @types = {
@@ -41,10 +41,10 @@ class Stats
             2 => :server
         }
         @metrics = {
-            "status" => {
-                :on => [ :backend, :server ],
-                :fields => ['status' ]
-            },
+            # "status" => {
+            #                 :on => [ :backend, :server ],
+            #                 :fields => ['status' ]
+            #             },
             "sessions" => {
                 :on => [ :frontend, :server, :backend ],
                 :fields => ['scur', 'smax', 'slim', 'stot']
