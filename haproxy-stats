@@ -140,7 +140,7 @@ opts.on("-HHOSTNAME", "--hostname=HOSTNAME", "Hostname",
         "Default: #{options[:hostname]}"){ |str|
             options[:hostname] = str
         }
-opts.on("-s", "--single", "Run in single-shot mode"){|s| options[:single] = s}
+opts.on("--single", "Run in single-shot mode"){|s| options[:single] = s}
 
 
 opts.separator ""
