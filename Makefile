@@ -26,7 +26,7 @@ install: sources
 
 package: install
 	/opt/fpm/bin/fpm -s dir -t deb  -n $(PACKAGE_NAME)  -v $(PACKAGE_VERSION) \
-                -d $(DEPENDS) --url $(URL) --arch $(ARCH) --description $(DESCRIPTION) \
+                --url $(URL) --arch $(ARCH) --description $(DESCRIPTION) \
                 -m $(MAINTAINER) \
 		-p $(PACKAGE_NAME)-$(PACKAGE_VERSION)_$(ARCH).deb -C installroot .
 
