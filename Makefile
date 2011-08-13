@@ -1,6 +1,5 @@
 NAME=collectd-plugins-haproxy
 VERSION=0.1.0
-SOURCE=https://download.github.com/$(NAME)-$(VERSION).tar.gz
 URL=https://github.banksimple.com/BankSimple/$(NAME)
 DESCRIPTION="Collectd plugin for haproxy"
 MAINTAINER=packages@banksimple.com
@@ -19,8 +18,7 @@ test:
 	./haproxy-stats -f samples/stats1.csv
 
 sources:
-	git clone $(URL).git $(NAME)-$(VERSION)
-	cd $(NAME)-$(VERSION) && git checkout $(VERSION)
+	echo "Installing from current dir"
 
 install: sources
 	install -d $(PREFIX)

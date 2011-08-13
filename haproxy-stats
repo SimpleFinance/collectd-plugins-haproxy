@@ -42,7 +42,7 @@ class Stats
         }
         @metrics = {
             "status" => {
-                :on => [ :frontend, :server ]
+                :on => [ :frontend, :server ],
                 :fields => ['status' ]
             },
             "sessions" => {
@@ -108,7 +108,7 @@ class Stats
         output = ""
         table = FasterCSV.parse(data, {:headers=> true, :converters => :all }) do |row|
             # Do cleanups and calculations
-            
+
 
             @metrics.each do |name, data|
                 if data[:on].include?(@types[row['type']])
