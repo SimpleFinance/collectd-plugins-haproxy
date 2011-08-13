@@ -1,0 +1,200 @@
+#!/usr/bin/env ruby
+#
+# haproxy-stats
+#
+# Copyright 2011 BankSimple. All rights reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
+
+require 'rubygems'
+require 'optparse'
+require 'socket'
+require 'fastercsv'
+
+options = {
+    :socket => "/var/run/haproxy.stats",
+    :interval => 10,
+    :hostname => Socket.gethostname
+}
+
+class Stats
+
+    def initialize(hostname, socket)
+        @hostname = hostname.gsub('-', '_')
+        @socket = socket
+
+        @types = {
+            0 => :frontend,
+            1 => :backend,
+            2 => :server
+        }
+        @metrics = {
+            "status" => {
+                :on => [ :frontend, :server ]
+                :fields => ['status' ]
+            },
+            "sessions" => {
+                :on => [ :frontend, :server, :backend ],
+                :fields => ['scur', 'smax', 'slim', 'stot']
+            },
+            "session_rates" => {
+                :on => [ :frontend, :backend, :server],
+                :fields => [ 'rate', 'rate_max', 'rate_lim']
+            },
+            "traffic" => {
+                :on => [ :frontend,  :server, :backend ],
+                :fields => ['bin', 'bout']
+            },
+            "errors" => {
+                :on => [ :frontend, :server, :backend ],
+                :fields => [ 'ereq', 'econ', 'eresp', 'dreq', 'dresp']
+            }
+        }
+
+        # A map of column name to list of
+        @cleanups => {
+            "status" => [
+                [/^UP$/, "2"],
+                [/^DOWN.*$/, "1"], #Going Up
+                [/^no check$/, "0"]
+                [/^UP.*$/, "-1"], #Going Down
+                [/^DOWN$/, "-2"],
+            ]
+        }
+    end
+
+    # Read in a haproxy 'show stat' output from a file
+    def from_file(filename)
+        data = File.read(filename)
+        clean(data)
+    end
+
+    def from_socket
+        socket = UNIXSocket.open(@socket)
+        socket.write("show stat\n")
+        data = socket.read
+        socket.close
+        clean(data)
+    end
+
+    # Clean up the 'csv' provided by haproxy stats
+    #   - We remove the leading '# ' for the headers
+    #   - We remove the trailing ',' on all lines
+    def clean(data)
+        l = data.split("\n")
+        l.each do |line|
+            if line.start_with?("# ")
+                line.slice!("# ")
+            end
+            line.slice!(-1..-1)
+            line
+        end
+        data = l.join("\n")
+    end
+
+    def parse(data, start_time)
+        output = ""
+        table = FasterCSV.parse(data, {:headers=> true, :converters => :all }) do |row|
+            # Do cleanups and calculations
+            
+
+            @metrics.each do |name, data|
+                if data[:on].include?(@types[row['type']])
+                    output << "PUTVAL #{@hostname}/haproxy-#{row['pxname'].gsub('-','_')}/haproxy_#{name}-#{row['svname'].gsub('-','_')} #{start_time}:"
+                    output << data[:fields].collect { |f| if row[f].nil? then 0 else row[f] end }.join(':')
+                    output << "\n"
+                end
+            end
+        end
+
+        output
+    end
+
+end
+
+
+opts = OptionParser.new
+opts.banner = "Usage: haproxy-stats [options]"
+opts.separator ""
+opts.on("-sSOCKET", "--socket=SOCKET", "Location of the haproxy stats socket",
+        "Default: #{options[:socket]}"){ |str|
+            options[:socket] = str
+        }
+opts.on("-iINTERVAL", "--interval=INTERVAL", "Interval between data collection",
+        "Default: #{options[:interval]}"){ |str|
+            options[:wait_time] = str.to_i
+        }
+opts.on("-HHOSTNAME", "--hostname=HOSTNAME", "Hostname",
+        "Default: #{options[:hostname]}"){ |str|
+            options[:hostname] = str
+        }
+opts.on("-s", "--single", "Run in single-shot mode"){|s| options[:single] = s}
+
+
+opts.separator ""
+opts.separator "Debugging options"
+opts.on("-fFILE", "--file=FILE", "Read sample data from a CSV file"){ |str|
+    options[:file] = str
+}
+
+opts.separator ""
+opts.separator "Common Options"
+
+opts.on_tail("-h", "--help", "Shows this message") {
+    exit
+}
+
+begin
+    opts.parse(ARGV)
+
+    # Reading from a file implies single-shot mode
+    if options[:file]
+        options[:single] = true
+    end
+rescue SystemExit
+    $stderr.puts opts
+    exit
+rescue Exception => e
+    $stderr.puts "Error: #{e}"
+    $stderr.puts opts
+    exit
+end
+
+begin
+    stats = Stats.new(options[:hostname], options[:socket])
+
+    while true do
+        start_run = Time.now.to_i
+        next_run = start_run + options[:interval]
+
+        data = ""
+        if options[:file]
+            data = stats.from_file(options[:file])
+        else
+            data = stats.from_socket
+        end
+
+        puts stats.parse(data, start_run)
+
+        if options[:single]
+            break
+        end
+
+        # sleep to make the interval
+        while((time_left = (next_run - Time.now.to_i)) > 0) do
+            sleep(time_left)
+        end
+    end
+end
