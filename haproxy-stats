@@ -73,10 +73,7 @@ class Stats
                 [/^DOWN$/, "-2"]
             ]
         }
-        
-        @percentages = {
-            ""
-        }
+
     end
 
     # Read in a haproxy 'show stat' output from a file
