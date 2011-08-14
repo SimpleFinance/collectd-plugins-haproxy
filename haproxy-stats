@@ -41,10 +41,10 @@ class Stats
             2 => :server
         }
         @metrics = {
-            # "status" => {
-            #                 :on => [ :backend, :server ],
-            #                 :fields => ['status' ]
-            #             },
+            "status" => {
+                :on => [ :backend, :server ],
+                :fields => ['status', 'downtime' ]
+            },
             "sessions" => {
                 :on => [ :frontend, :server, :backend ],
                 :fields => ['scur', 'smax', 'slim', 'stot']
@@ -72,6 +72,10 @@ class Stats
                 [/^UP.*$/, "-1"], #Going Down
                 [/^DOWN$/, "-2"]
             ]
+        }
+        
+        @percentages = {
+            ""
         }
     end
 
@@ -108,7 +112,13 @@ class Stats
         output = ""
         table = FasterCSV.parse(data, {:headers=> true, :converters => :all }) do |row|
             # Do cleanups and calculations
-
+            @cleanups.each do |field, matches|
+                matches.each do |from, to|
+                    if row[field] =~ from
+                        row[field] = to
+                    end
+                end
+            end
 
             @metrics.each do |name, data|
                 if data[:on].include?(@types[row['type']])
