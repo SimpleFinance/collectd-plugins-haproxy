@@ -1,8 +1,8 @@
 NAME=collectd-plugins-haproxy
-VERSION=0.1.3
-URL=https://github.banksimple.com/BankSimple/$(NAME)
+VERSION=0.2.0
+URL=https://github.com/SimpleFinance/$(NAME)
 DESCRIPTION="Collectd plugin for haproxy"
-MAINTAINER=packages@banksimple.com
+MAINTAINER=packages@simple.com
 ARCH=all
 PACKAGE_NAME=$(NAME)
 PACKAGE_VERSION=$(VERSION)
