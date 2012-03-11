@@ -20,7 +20,7 @@ Usage: haproxy-stats [options]
     -i, --interval=INTERVAL          Interval between data collection
                                      Default: 10
     -H, --hostname=HOSTNAME          Hostname
-                                     Default: kailash.local
+                                     Default: localhost
     -s, --single                     Run in single-shot mode
 
 Debugging options
@@ -41,9 +41,9 @@ Then you can test the output using the `-f FILE` option.  This will make the plu
 Licence and Author
 -------------------
 
-Author::   James Casey (<james@banksimple.com>)
+Author::   James Casey (<james@simple.com>)
 
-Copyright 2011 Simple Finance Corp.
+Copyright 2011 Simple Finance Technology Corp.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
