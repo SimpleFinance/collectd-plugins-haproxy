@@ -21,7 +21,7 @@
 require 'rubygems'
 require 'optparse'
 require 'socket'
-require 'fastercsv'
+require 'csv'
 
 options = {
     :socket => "/var/run/haproxy.stats",
@@ -107,7 +107,7 @@ class Stats
 
     def parse(data, start_time)
         output = ""
-        table = FasterCSV.parse(data, {:headers=> true, :converters => :all }) do |row|
+        table = CSV.parse(data, {:headers=> true, :converters => :all }) do |row|
             # Do cleanups and calculations
             @cleanups.each do |field, matches|
                 matches.each do |from, to|
